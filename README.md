@@ -104,6 +104,8 @@ sudo /opt/MegaRAID/storcli/storcli64 /c0 show | head   # 能列出控制器即�
 
 ### 方式一：应用中心安装（推荐）
 
+进入fnOS WEB管理页面打开应用中心,在左侧栏最下方找到"手动安装"，上传megaraid-console.fpk安装即可
+
 把 `megaraid-console.fpk` 导入 fnOS 应用中心，或使用命令行工具（需 root）：
 
 ```bash
