@@ -1,0 +1,3 @@
+#!/bin/bash
+# Called before the application files are installed. Nothing to prepare.
+exit 0

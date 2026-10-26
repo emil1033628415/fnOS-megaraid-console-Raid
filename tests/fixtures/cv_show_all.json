@@ -1,0 +1,45 @@
+{
+  "Controllers": [
+    {
+      "Command Status": {
+        "Controller": 0,
+        "Status": "Success",
+        "Description": "None"
+      },
+      "Response Data": {
+        "Cachevault_Info": [
+          {
+            "Type": "CacheVault",
+            "State": "Optimal",
+            "Temp": "31C",
+            "MfgDate": "2024/06/02"
+          }
+        ],
+        "Firmware_Status": [
+          { "Property": "NVCache State", "Value": "OK" },
+          { "Property": "Replacement required", "Value": "No" },
+          { "Property": "Module microcode update required", "Value": "No" }
+        ],
+        "GasGaugeStatus": [
+          { "Property": "Pack Energy", "Value": "1050 J" },
+          { "Property": "Capacitance", "Value": "98 %" },
+          { "Property": "Temperature", "Value": "31C" }
+        ],
+        "Design_Info": [
+          { "Property": "Device Name", "Value": "CVFM06" },
+          { "Property": "Design Capacity", "Value": "1100 J" },
+          { "Property": "Module Version", "Value": "1.0" },
+          { "Property": "Manufacture Name", "Value": "LSON" },
+          { "Property": "Serial Number", "Value": "SN-CV-0001" },
+          { "Property": "Date of Manufacture", "Value": "2024/06/02" },
+          { "Property": "CacheVault Flash Size", "Value": "8 MB" }
+        ],
+        "Properties": [
+          { "Property": "Auto Learn Period", "Value": "90 days" },
+          { "Property": "Next Learn time", "Value": "2026-12-01 01:00:00" },
+          { "Property": "Auto-Learn Mode", "Value": "Autonomic" }
+        ]
+      }
+    }
+  ]
+}

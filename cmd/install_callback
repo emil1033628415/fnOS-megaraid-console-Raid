@@ -1,0 +1,57 @@
+#!/bin/bash
+# Called after the application files have been installed.
+#
+# 1. Creates the dedicated PAM service used for password re-verification.
+#    It must NOT reuse su/sudo: those start with `auth sufficient pam_rootok.so`,
+#    and this daemon runs as root, so that module would accept any password.
+# 2. Detects the storcli binary and writes a first configuration.
+set -u
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+APPDEST="${TRIM_APPDEST:-$(cd "$SCRIPT_DIR/.." && pwd)}"
+PKGETC="${TRIM_PKGETC:-${APPDEST}/etc}"
+PKGVAR="${TRIM_PKGVAR:-${APPDEST}/var}"
+LOG="${TRIM_TEMP_LOGFILE:-${PKGVAR}/install.log}"
+PYTHON="$(command -v python3 || echo /usr/bin/python3)"
+DAEMON="${APPDEST}/server/raidwatchd.py"
+
+mkdir -p "$PKGETC" "$PKGVAR" 2>/dev/null
+
+fail() {
+    echo "megaraid-console: $1" >> "$LOG" 2>/dev/null
+    exit 1
+}
+
+[ -x "$PYTHON" ] || fail "python3 is required but was not found"
+[ -r "$DAEMON" ] || fail "daemon not found at $DAEMON"
+
+# --- PAM service for password re-verification ------------------------------ #
+PAM_SERVICE=/etc/pam.d/megaraid-console
+if [ -f "$PAM_SERVICE" ]; then
+    echo "megaraid-console: $PAM_SERVICE already present" >> "$LOG"
+else
+    if cat > "$PAM_SERVICE" <<'EOS'
+# megaraid-console -- 应用内二次密码验证（由应用自动创建，可安全删除）
+#
+# 关键：这里绝不能出现 pam_rootok.so。
+# 本应用以 root 身份运行，若改用 su / sudo 之类已包含 pam_rootok 的服务名，
+# 该模块会直接返回成功并短路整条认证链 —— 任何密码都会被放行。
+auth     include  common-auth
+account  include  common-account
+EOS
+    then
+        chmod 644 "$PAM_SERVICE" 2>/dev/null
+        echo "megaraid-console: created $PAM_SERVICE" >> "$LOG"
+    else
+        # Not fatal at install time: the daemon retries this on startup. Danger
+        # actions refuse to run until it succeeds.
+        echo "megaraid-console: WARNING could not create $PAM_SERVICE" >> "$LOG"
+    fi
+fi
+
+# --- initial configuration ------------------------------------------------- #
+# An existing configuration always wins, including across reinstalls.
+"$PYTHON" "$DAEMON" init-config --appdest "$APPDEST" --etc "$PKGETC" >> "$LOG" 2>&1 \
+    || fail "could not create the default configuration"
+
+exit 0

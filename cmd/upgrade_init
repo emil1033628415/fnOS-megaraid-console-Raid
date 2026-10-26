@@ -1,0 +1,15 @@
+#!/bin/bash
+# Called before an upgrade replaces the application files: keep a copy of the
+# user's configuration in the persistent data directory.
+set -u
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+APPDEST="${TRIM_APPDEST:-$(cd "$SCRIPT_DIR/.." && pwd)}"
+PKGETC="${TRIM_PKGETC:-${APPDEST}/etc}"
+PKGVAR="${TRIM_PKGVAR:-${APPDEST}/var}"
+
+mkdir -p "$PKGVAR" 2>/dev/null
+if [ -r "${PKGETC}/config.json" ]; then
+    cp -f "${PKGETC}/config.json" "${PKGVAR}/config.backup.json" 2>/dev/null || true
+fi
+exit 0

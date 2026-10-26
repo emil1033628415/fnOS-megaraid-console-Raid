@@ -1,0 +1,4 @@
+#!/bin/bash
+# Settings are applied live through the web UI; the daemon reads its config
+# file on every request, so there is nothing to do here.
+exit 0

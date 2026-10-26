@@ -1,0 +1,24 @@
+# Python
+__pycache__/
+*.py[cod]
+*.pyo
+.pytest_cache/
+.mypy_cache/
+.ruff_cache/
+
+# fnpack / build output
+*.fpk
+*.tgz
+/dist/
+/build/
+
+# editors & OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db
+*.swp
+
+# local scratch
+*.log
+/tmp/

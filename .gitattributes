@@ -1,0 +1,9 @@
+# 统一换行与二进制标记，避免 GitHub 上出现无意义的整文件 diff
+* text=auto eol=lf
+
+*.png binary
+*.PNG binary
+*.jpg binary
+*.ico binary
+*.fpk binary
+*.tgz binary

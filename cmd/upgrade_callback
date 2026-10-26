@@ -1,0 +1,22 @@
+#!/bin/bash
+# Called after an upgrade. Restores the configuration if it went missing and
+# makes sure one exists, without ever overwriting a surviving config.
+set -u
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+APPDEST="${TRIM_APPDEST:-$(cd "$SCRIPT_DIR/.." && pwd)}"
+PKGETC="${TRIM_PKGETC:-${APPDEST}/etc}"
+PKGVAR="${TRIM_PKGVAR:-${APPDEST}/var}"
+PYTHON="$(command -v python3 || echo /usr/bin/python3)"
+DAEMON="${APPDEST}/server/raidwatchd.py"
+
+mkdir -p "$PKGETC" 2>/dev/null
+
+if [ ! -r "${PKGETC}/config.json" ] && [ -r "${PKGVAR}/config.backup.json" ]; then
+    cp -f "${PKGVAR}/config.backup.json" "${PKGETC}/config.json" 2>/dev/null || true
+fi
+
+if [ -x "$PYTHON" ] && [ -r "$DAEMON" ]; then
+    "$PYTHON" "$DAEMON" init-config --appdest "$APPDEST" --etc "$PKGETC" >> "${PKGVAR}/upgrade.log" 2>&1 || true
+fi
+exit 0

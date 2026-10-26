@@ -1,0 +1,17 @@
+{
+    ".url": {
+        "megaraid-console.Application": {
+            "title": "MegaRAID Console",
+            "icon": "images/icon_{0}.png",
+            "type": "iframe",
+            "protocol": "",
+            "gatewayPrefix": "/app/megaraid-console",
+            "gatewaySocket": "app.sock",
+            "url": "/app/megaraid-console",
+            "allUsers": false,
+            "control": {
+                "accessPerm": "editable"
+            }
+        }
+    }
+}

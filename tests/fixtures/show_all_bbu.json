@@ -1,0 +1,56 @@
+{
+  "Controllers": [
+    {
+      "Command Status": {
+        "Controller": 0,
+        "Status": "Success",
+        "Description": "None"
+      },
+      "Response Data": {
+        "Basics": {
+          "Controller": 0,
+          "Model": "PERC H840 Adapter",
+          "Serial Number": "SN-CTRL-0001",
+          "SAS Address": "5000AABBCCDDEEFF",
+          "PCI Address": "00:3b:00:00",
+          "Firmware Version": "51.16.0-4276",
+          "Bios Version": "7.20.00.00_51.16.00.00",
+          "Driver Name": "megaraid_sas",
+          "Driver Version": "07.730.01.00-rc1"
+        },
+        "Version": {
+          "Firmware Package Build": "51.16.0-4276"
+        },
+        "Status": {
+          "Controller Status": "Optimal",
+          "Memory Correctable Errors": 0,
+          "Memory Uncorrectable Errors": 0
+        },
+        "HwCfg": {
+          "BBU": "Present",
+          "On Board Memory Size": "8GB",
+          "Temperature Sensor for ROC": "Present",
+          "ROC temperature(Degree Celsius)": "62"
+        },
+        "Bus": {
+          "Vendor Id": 4096,
+          "Device Id": 93,
+          "Host Interface": "PCI-E",
+          "Device Interface": "SAS-3.0"
+        },
+        "Capabilities": {
+          "Supported Drives": "SAS, SATA",
+          "Max Number of VDs": "240"
+        },
+        "BBU_Info": [
+          {
+            "Type": "BBU",
+            "State": "Optimal",
+            "Temperature": "27 C",
+            "MfgDate": "2025/03/11"
+          }
+        ]
+      }
+    }
+  ]
+}

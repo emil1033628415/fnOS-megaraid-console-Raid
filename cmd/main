@@ -1,0 +1,154 @@
+#!/bin/bash
+# megaraid-console lifecycle script: start / stop / status.
+#
+# Environment provided by the fnOS app center:
+#   TRIM_APPDEST  installed application files (target)
+#   TRIM_PKGETC   persistent configuration
+#   TRIM_PKGVAR   persistent runtime data
+set -u
+
+APPNAME="megaraid-console"
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+APPDEST="${TRIM_APPDEST:-$(cd "$SCRIPT_DIR/.." && pwd)}"
+PKGVAR="${TRIM_PKGVAR:-${APPDEST}/var}"
+PKGETC="${TRIM_PKGETC:-${APPDEST}/etc}"
+
+LOG_FILE="${PKGVAR}/info.log"
+PID_FILE="${PKGVAR}/app.pid"
+SOCKET="${APPDEST}/app.sock"
+DAEMON="${APPDEST}/server/raidwatchd.py"
+PYTHON="$(command -v python3 || echo /usr/bin/python3)"
+
+mkdir -p "$PKGVAR" 2>/dev/null
+
+log_msg() {
+    echo "$(date '+%Y-%m-%d %H:%M:%S') - $1" >> "$LOG_FILE" 2>/dev/null
+}
+
+check_process() {
+    [ -n "${1:-}" ] && kill -0 "$1" 2>/dev/null
+}
+
+# A PID alone is not proof: after a SIGKILL the stale file can happen to match
+# an unrelated process that reused the number, and "start" would then refuse to
+# run forever. Check that the process really is our daemon.
+is_our_daemon() {
+    [ -n "${1:-}" ] || return 1
+    [ -r "/proc/$1/cmdline" ] || return 1
+    tr '\0' ' ' < "/proc/$1/cmdline" 2>/dev/null | grep -q "raidwatchd.py"
+}
+
+running_pid() {
+    [ -r "$PID_FILE" ] || return 1
+    local pid
+    pid="$(head -n 1 "$PID_FILE" 2>/dev/null | tr -d '[:space:]')"
+    if check_process "$pid" && is_our_daemon "$pid"; then
+        printf '%s' "$pid"
+        return 0
+    fi
+    rm -f "$PID_FILE"
+    return 1
+}
+
+status() {
+    running_pid >/dev/null 2>&1
+}
+
+start_process() {
+    if status; then
+        log_msg "already running (pid $(running_pid))"
+        return 0
+    fi
+
+    if [ ! -r "$DAEMON" ]; then
+        log_msg "ERROR: daemon not found at $DAEMON"
+        echo "$APPNAME: daemon not found at $DAEMON" >> "${TRIM_TEMP_LOGFILE:-/dev/null}"
+        return 1
+    fi
+
+    if [ ! -x "$PYTHON" ]; then
+        log_msg "ERROR: python3 not found"
+        echo "$APPNAME: python3 is required but was not found" >> "${TRIM_TEMP_LOGFILE:-/dev/null}"
+        return 1
+    fi
+
+    # A socket left behind by a crash would block the bind.
+    rm -f "$SOCKET" 2>/dev/null
+
+    log_msg "starting $APPNAME"
+    # Runs as root so it can invoke storcli against the RAID controller.
+    # The resulting socket is root-only, and --require-admin additionally
+    # rejects any logged-in non-administrator the fnOS gateway forwards.
+    nohup "$PYTHON" "$DAEMON" run \
+        --appdest "$APPDEST" \
+        --etc "$PKGETC" \
+        --socket "$SOCKET" \
+        --ui "${APPDEST}/ui" \
+        --require-admin \
+        >> "$LOG_FILE" 2>&1 &
+    local pid=$!
+    printf '%s' "$pid" > "$PID_FILE"
+    log_msg "pid = $pid"
+
+    local count=0
+    while [ "$count" -lt 15 ]; do
+        if ! check_process "$pid"; then
+            log_msg "ERROR: daemon exited during startup"
+            rm -f "$PID_FILE"
+            return 1
+        fi
+        [ -S "$SOCKET" ] && break
+        sleep 1
+        count=$((count + 1))
+    done
+    log_msg "started (socket=$SOCKET)"
+    return 0
+}
+
+stop_process() {
+    local pid
+    if ! pid="$(running_pid)"; then
+        rm -f "$SOCKET" 2>/dev/null
+        return 0
+    fi
+
+    log_msg "stopping pid $pid"
+    kill -TERM "$pid" 2>/dev/null
+
+    local count=0
+    while check_process "$pid" && [ "$count" -lt 15 ]; do
+        sleep 1
+        count=$((count + 1))
+    done
+
+    if check_process "$pid"; then
+        log_msg "forcing kill of pid $pid"
+        kill -KILL "$pid" 2>/dev/null
+        sleep 1
+    fi
+
+    rm -f "$PID_FILE"
+    rm -f "$SOCKET" 2>/dev/null
+    log_msg "stopped"
+    return 0
+}
+
+case "${1:-}" in
+start)
+    start_process || exit 1
+    exit 0
+    ;;
+stop)
+    stop_process || exit 1
+    exit 0
+    ;;
+status)
+    if status; then
+        exit 0
+    fi
+    exit 3
+    ;;
+*)
+    exit 1
+    ;;
+esac

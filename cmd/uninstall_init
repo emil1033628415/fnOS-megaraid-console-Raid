@@ -1,0 +1,7 @@
+#!/bin/bash
+# Called before the application is removed: stop the daemon while its files
+# are still present.
+set -u
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+"${SCRIPT_DIR}/main" stop >/dev/null 2>&1 || true
+exit 0

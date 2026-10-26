@@ -1,0 +1,3 @@
+#!/bin/bash
+# No wizard fields are collected, so nothing to prepare before a config change.
+exit 0

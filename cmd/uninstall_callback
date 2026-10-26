@@ -1,0 +1,20 @@
+#!/bin/bash
+# Called after the application files have been removed.
+#
+# User data (TRIM_PKGETC/TRIM_PKGVAR) is deliberately preserved so a reinstall
+# keeps the configuration and audit log. The PAM service definition this app
+# created is removed, since nothing else references it.
+set -u
+
+SCRIPT_DIR="$(cd "$(dirname "$0")" && pwd)"
+APPDEST="${TRIM_APPDEST:-$(cd "$SCRIPT_DIR/.." && pwd)}"
+
+rm -f "${APPDEST}/app.sock" 2>/dev/null
+rm -f "${APPDEST}/var/app.pid" 2>/dev/null
+
+PAM_SERVICE=/etc/pam.d/megaraid-console
+if [ -f "$PAM_SERVICE" ] && grep -q "megaraid-console" "$PAM_SERVICE" 2>/dev/null; then
+    rm -f "$PAM_SERVICE" 2>/dev/null || true
+fi
+
+exit 0

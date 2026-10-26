@@ -1,0 +1,34 @@
+{
+  "Controllers": [
+    {
+      "Command Status": {
+        "Controller": 0,
+        "Status": "Success",
+        "Description": "None"
+      },
+      "Response Data": {
+        "BBU_Info": [
+          { "Property": "Type", "Value": "BBU" },
+          { "Property": "Voltage", "Value": "4196 mV" },
+          { "Property": "Current", "Value": "0 mA" },
+          { "Property": "Temperature", "Value": "25 C" },
+          { "Property": "Battery State", "Value": "Optimal" },
+          { "Property": "Voltage State", "Value": "Optimal" },
+          { "Property": "Retention Time", "Value": "24 hours" },
+          { "Property": "Replacement required", "Value": "No" },
+          { "Property": "Design Capacity", "Value": "4400 mAh" },
+          { "Property": "Serial Number", "Value": "SN-BBU-0001" },
+          { "Property": "Manufacture Name", "Value": "LSON" },
+          { "Property": "Module Version", "Value": "1.2" },
+          { "Property": "Date of Manufacture", "Value": "2025/03/11" }
+        ],
+        "Properties": [
+          { "Property": "Auto Learn Period", "Value": "90 days" },
+          { "Property": "Next Learn time", "Value": "2026-11-10 02:00:00" },
+          { "Property": "Learn Delay Interval", "Value": "0 hours" },
+          { "Property": "Auto-Learn Mode", "Value": "Autonomic" }
+        ]
+      }
+    }
+  ]
+}

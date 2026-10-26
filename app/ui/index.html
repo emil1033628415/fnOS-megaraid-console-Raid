@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>MegaRAID Console</title>
+<link rel="stylesheet" href="__RW_BASE__/style.css" />
+<script>window.RW_BASE = "__RW_BASE__";</script>
+</head>
+<body>
+<div class="loadbar" id="loadbar"><i></i></div>
+<div id="app">
+
+  <header class="topbar">
+    <div class="brand">
+      <span class="pulse" id="health-dot" title="整体健康"></span>
+      <div class="brand-text">
+        <h1>MegaRAID Console<span class="sync hidden" id="sync-chip"><span class="spinner"></span>同步中…</span></h1>
+        <p class="sub" id="subtitle">正在连接控制器…</p>
+      </div>
+    </div>
+    <div class="actions">
+      <label class="switch" title="定时自动刷新阵列状态">
+        <input type="checkbox" id="auto" checked />
+        <span class="track"><span class="knob"></span></span>
+        <span class="switch-label">自动刷新</span>
+      </label>
+      <button class="btn ghost" id="btn-refresh">刷新</button>
+      <button class="btn ghost" id="btn-audit">操作审计</button>
+      <button class="btn ghost" id="btn-settings">设置</button>
+    </div>
+  </header>
+
+  <div id="banner" class="banner hidden"></div>
+
+  <div id="advisories" class="advisories hidden"></div>
+
+  <div id="taskbar" class="taskbar hidden"></div>
+
+  <div id="boot" class="boot hidden">
+    <div class="spinner big"></div>
+    <p class="boot-title">正在读取控制器状态…</p>
+    <p class="boot-hint">首次读取需要调用 storcli 抓取控制器、虚拟盘、物理盘与链路误码，通常 1–3 秒</p>
+  </div>
+
+  <section class="panel">
+    <h2 class="panel-title">概览</h2>
+    <div class="cards" id="overview"></div>
+  </section>
+
+  <section class="panel">
+    <h2 class="panel-title">
+      控制器信息
+      <span class="hint" id="ctrl-hint"></span>
+    </h2>
+    <div id="controller-info" class="ctrl-groups"></div>
+  </section>
+
+  <section class="panel">
+    <h2 class="panel-title">虚拟盘</h2>
+    <div id="vds" class="vd-grid"></div>
+  </section>
+
+  <section class="panel">
+    <h2 class="panel-title">
+      物理盘
+      <span class="hint">PHY 误码速率是判断 SAS 链路信号质量的关键指标 —— 它空闲时也会增长，速率才是判据</span>
+    </h2>
+    <div id="drives" class="drive-grid"></div>
+  </section>
+
+  <section class="panel grid-2">
+    <div>
+      <h2 class="panel-title">控制器参数</h2>
+      <div id="settings" class="kv"></div>
+      <div class="inline-actions" id="settings-actions"></div>
+    </div>
+    <div>
+      <h2 class="panel-title" id="misc-title">电源备份（CacheVault / 电池）与计划任务</h2>
+      <div id="misc" class="kv"></div>
+      <div class="inline-actions" id="misc-actions"></div>
+    </div>
+  </section>
+
+  <section class="panel">
+    <h2 class="panel-title">控制器事件日志<span class="hint" id="events-count"></span></h2>
+    <div class="table-wrap"><table class="data-table" id="events"></table></div>
+  </section>
+
+  <section class="panel hidden" id="audit-panel">
+    <h2 class="panel-title">操作审计</h2>
+    <div class="table-wrap"><table class="data-table" id="audit"></table></div>
+  </section>
+
+</div>
+
+<div class="modal hidden" id="modal">
+  <div class="modal-box">
+    <h3 id="modal-title">确认操作</h3>
+    <p id="modal-body" class="modal-body"></p>
+    <div id="modal-value" class="modal-value hidden">
+      <label id="modal-value-label">参数</label>
+      <input type="text" id="modal-input" autocomplete="off" />
+    </div>
+    <div id="modal-target" class="modal-target hidden"></div>
+    <div id="modal-extra" class="modal-confirm hidden">
+      <label id="modal-extra-label">确认</label>
+      <input type="text" id="modal-extra-input" autocomplete="off" spellcheck="false" />
+      <p class="modal-note" id="modal-extra-note"></p>
+    </div>
+    <div id="modal-password" class="modal-confirm hidden">
+      <label id="modal-password-label">账户密码</label>
+      <input type="password" id="modal-password-input" autocomplete="new-password" spellcheck="false" />
+      <p class="modal-note">将用当前登录账户的系统密码验证。密码不会被保存，也不会写入日志。</p>
+    </div>
+    <div id="modal-progress" class="modal-progress hidden">
+      <span class="spinner"></span>
+      <span class="mp-text" id="modal-progress-text">正在执行…</span>
+    </div>
+    <div class="modal-actions">
+      <button class="btn ghost" id="modal-cancel">取消</button>
+      <button class="btn danger" id="modal-ok">执行</button>
+    </div>
+    <p class="modal-note" id="modal-hint">命令由控制器执行，通常需要几秒；较慢的操作可以在关闭本窗口后继续在顶部跟踪进度。</p>
+  </div>
+</div>
+
+<div class="toast hidden" id="toast"></div>
+
+<script src="__RW_BASE__/app.js"></script>
+</body>
+</html>
