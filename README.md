@@ -87,7 +87,7 @@ fnOS 上的 MegaRAID 只能靠 `storcli` 命令行摸状态：`show all` 的输�
 |---|---|
 | fnOS | ≥ 1.1.3100，x86 |
 | Python | 3.11（系统自带）；后端只用标准库 |
-| 阵列卡 | 实测 LSI MegaRAID **9361-8i**（CacheVault）与 Dell **PERC H840**（BBU）；背板拓扑 `/c0/eN/sN` 与直连拓扑 `/c0/sN` 均支持 |
+| 阵列卡 | 实测 LSI MegaRAID **9361-8i**（CacheVault）与 Dell **PERC H840**（BBU）；背板拓扑 `/c0/eN/sN` 与直连拓扑 `/c0/sN` 均支持，理论上支持所有LSI阵列卡 |
 | StorCLI | 需自行安装 Broadcom StorCLI（验证于 `007.2705.0000.0000`），默认 `/opt/MegaRAID/storcli/storcli64`，必须 root 拥有且同组/他人不可写 |
 | 浏览器 | 任意现代浏览器；界面无框架、无构建步骤 |
 
