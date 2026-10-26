@@ -72,6 +72,11 @@ fnOS 上的 MegaRAID 只能靠 `storcli` 命令行摸状态：`show all` 的输�
 
 所有动作经过服务端白名单校验，编译成固定 argv 直接 `exec`；`danger` 级动作额外要求密码。
 
+**1.0.7 亮点**
+
+- **概览按需显示**：`最高链路误码`、`最高磁盘介质错误` 为 0 时整张卡片不渲染；`SMART 告警磁盘`
+  只在真有告警（含预测故障计数）时出现，并列出具体盘位。健康阵列不再出现一排 0
+
 **1.0.6 亮点**
 
 - **电池备电（BBU）支持**：先探 `/cN/cv`，失败自动回退 `/cN/bbu`，统一成一套模型并用 `kind` 区分；面板展示状态 / 电压 / 电流 / 温度 / 保持时间 / 设计容量 / 固件 / 厂商 / 序列号 / 生产日期 / 学习周期，学习周期单独提示
@@ -238,6 +243,18 @@ sudo curl -s --unix-socket /vol<N>/@appcenter/megaraid-console/app.sock \
 python3 -m unittest discover -s tests -v     # 32 项
 node --check app/ui/app.js                   # 前端语法
 ```
+
+发布前还要过一道闸门，它把完整性、语法、测试、敏感信息和打包一次跑完（CI 每次 push/PR 也会跑同样的检查）：
+
+```bash
+./tools/prepublish-check.sh          # 本机完整检查（含真机标识 deny 列表 + fnpack 实打）
+./tools/prepublish-check.sh --ci     # CI 模式：跳过本机私有文件与 fnpack
+```
+
+检查项：必需文件齐全、10 个脚本的可执行位、`manifest` / 后端 `VERSION` / `CHANGELOG` 版本一致、
+Python 与 JS 与 shell 语法、32 项单元测试、无构建产物或日志入库、密钥与令牌模式、内网 IP 与个人邮箱、
+本机真机标识（控制器序列号 / SAS 地址 / 盘序列号 / 主机名，列表放在仓库之外）、fnpack 打包后包内版本与
+`LICENSE` 与 `cmd/main` 权限。任何一项失败即退出码 1。
 
 测试**不调用 storcli**：`run_storcli_json` 被夹具替换，所以可以在生产机上安全运行，不会触发重建 / 离线等任何状态变更。覆盖：
 

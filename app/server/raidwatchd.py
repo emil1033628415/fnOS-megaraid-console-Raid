@@ -45,7 +45,7 @@ import pam_verify  # noqa: E402
 from raidcore import CTRL, PhySampler, StorcliError, TARGET_RE  # noqa: E402
 
 APP_NAME = "megaraid-console"
-VERSION = "1.0.6"
+VERSION = "1.0.7"
 DEFAULT_BASE = "/app/megaraid-console"
 
 DEFAULT_CONFIG = {

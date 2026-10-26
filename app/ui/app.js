@@ -363,18 +363,18 @@
       badDrives.length ? 'bad' : (warnDrives.length ? 'warn' : 'ok'),
       badDrives.length ? 'bad' : (warnDrives.length ? 'warn' : 'ok'));
 
-    // Worst PHY rate across drives — the early-warning number.
+    // Worst PHY rate across drives — the early-warning number.  A clean link
+    // prints 0, and a wall of zeroes trains the operator to ignore the row, so
+    // the card only exists once something is actually happening.
     var worst = null;
     drives.forEach(function (d) {
       var r = d.phy && d.phy.inval_per_s;
-      if (r === null || r === undefined) return;
+      if (r === null || r === undefined || r <= 0) return;
       if (!worst || r > worst.rate) worst = { rate: r, slot: d.short };
     });
     if (worst) {
       card('最高链路误码', rate(worst.rate) + ' /秒', '来自 ' + worst.slot,
         rateClass(worst.rate, thresholds), rateClass(worst.rate, thresholds));
-    } else {
-      card('最高链路误码', '采样中…', '需两次刷新才能算出速率', '', '');
     }
 
     // The card follows the hardware: a supercapacitor on the 9361-8i class, a
@@ -397,6 +397,41 @@
          isBbu && reading(cv.voltage) ? cv.voltage : '']
           .filter(meaningful).join(' · '),
         cvOk ? 'ok' : 'warn', cvOk ? 'ok' : 'warn');
+    }
+
+    // Media errors are cumulative per drive; the card exists only when one of
+    // them has counted something.
+    var worstMedia = null;
+    drives.forEach(function (d) {
+      var n = d.media_errors;
+      if (typeof n !== 'number' || n <= 0) return;
+      if (!worstMedia || n > worstMedia.count) worstMedia = { count: n, slot: d.short };
+    });
+    // Same rule as the PHY card: a healthy array shows no counter at all, so
+    // the overview only carries rows that currently mean something.
+    if (worstMedia) {
+      card('最高磁盘介质错误', worstMedia.count + ' 个', '来自 ' + worstMedia.slot,
+        'warn', 'warn');
+    }
+
+    // SMART / predictive-failure drives, listed by name.  Both are the same
+    // early-warning family and both mean "replace this disk", so they share one
+    // card; an unremarkable array simply has no card here.
+    var smartHits = [];
+    drives.forEach(function (d) {
+      var flagged = /^(yes|true)$/i.test(String(d.smart_alert == null ? '' : d.smart_alert).trim());
+      var predictive = typeof d.predictive_failures === 'number' && d.predictive_failures > 0;
+      if (flagged || predictive) {
+        smartHits.push({ short: d.short, predictive: !flagged && predictive });
+      }
+    });
+    if (smartHits.length) {
+      var names = smartHits.map(function (h) {
+        return h.short + (h.predictive ? '(预测)' : '');
+      });
+      var shown = names.slice(0, 4).join('、')
+        + (names.length > 4 ? ' 等 ' + names.length + ' 块' : '');
+      card('SMART 告警磁盘', smartHits.length + ' 块', shown, 'bad', 'bad');
     }
 
     card('控制器状态', c.status || '-', '内存错误 可纠正 ' + num(c.memory_correctable) + ' / 不可纠正 ' + num(c.memory_uncorrectable),
