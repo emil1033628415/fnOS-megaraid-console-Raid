@@ -1,0 +1,53 @@
+name: tests
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  unittest:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Syntax check (python)
+        run: |
+          python3 - <<'PY'
+          import ast, glob, sys
+          bad = []
+          for path in glob.glob("app/server/*.py"):
+              try:
+                  ast.parse(open(path, encoding="utf-8").read(), filename=path)
+              except SyntaxError as exc:
+                  print(exc)
+                  bad.append(path)
+          sys.exit(1 if bad else 0)
+          PY
+
+      - name: Syntax check (frontend and lifecycle scripts)
+        run: |
+          node --check app/ui/app.js
+          for f in cmd/*; do bash -n "$f"; done
+
+      - name: Regression tests (no storcli calls)
+        run: python3 -m unittest discover -s tests -v
+
+      - name: Packaging smoke test
+        run: |
+          # fnpack is fnOS-only; the layout check below catches a package that
+          # lost a file fnpack needs, without depending on the binary.
+          for f in manifest ICON.PNG ICON_256.PNG LICENSE \
+                   app/server/raidwatchd.py app/server/raidcore.py \
+                   app/server/pam_verify.py app/ui/app.js app/ui/index.html \
+                   app/ui/config app/ui/images/icon_256.png \
+                   cmd/main cmd/install_callback cmd/uninstall_callback \
+                   config/privilege config/resource; do
+            test -f "$f" || { echo "missing: $f"; exit 1; }
+          done
+          grep -q '^desktop_uidir *=' manifest
+          grep -q '^desktop_applaunchname *=' manifest
